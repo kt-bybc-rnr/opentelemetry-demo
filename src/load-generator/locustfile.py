@@ -106,6 +106,9 @@ people = json.load(people_file)
 
 class WebsiteUser(HttpUser):
     wait_time = between(1, 10)
+    network_timeout = 15
+    connection_timeout = 5
+    connection_pool_size = 50
 
     @task(1)
     def index(self):
@@ -184,6 +187,7 @@ browser_traffic_enabled = os.environ.get("LOCUST_BROWSER_TRAFFIC_ENABLED", "").l
 if browser_traffic_enabled:
     class WebsiteBrowserUser(PlaywrightUser):
         headless = True  # to use a headless browser, without a GUI
+        connection_pool_size = 50
 
         @task
         @pw

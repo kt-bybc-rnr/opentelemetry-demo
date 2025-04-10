@@ -19,4 +19,7 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers
 RUN playwright install --with-deps chromium
 COPY ./src/load-generator/locustfile.py .
 COPY ./src/load-generator/people.json .
-ENTRYPOINT ["locust", "--skip-log-setup"]
+COPY ./src/load-generator/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]

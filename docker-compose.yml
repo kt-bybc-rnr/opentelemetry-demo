@@ -391,10 +391,10 @@ services:
         condition: service_started
     logging: *logging
 
-  # Load Generator
+  # Load Generator - Master
   load-generator:
     image: ${IMAGE_NAME}:${DEMO_VERSION}-load-generator
-    container_name: load-generator
+    container_name: load-generator-master
     build:
       context: ./
       dockerfile: ${LOAD_GENERATOR_DOCKERFILE}
@@ -403,11 +403,12 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1500M
+          memory: 500M
     restart: unless-stopped
     ports:
       - "${LOCUST_WEB_PORT}"
     environment:
+      - LOCUST_MODE=master
       - LOCUST_WEB_PORT
       - LOCUST_USERS
       - LOCUST_HOST
@@ -417,12 +418,109 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       - OTEL_RESOURCE_ATTRIBUTES
-      - OTEL_SERVICE_NAME=load-generator
+      - OTEL_SERVICE_NAME=load-generator-master
       - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
       - LOCUST_WEB_HOST=0.0.0.0
       - FLAGD_HOST
       - FLAGD_OFREP_PORT
     depends_on:
+      frontend:
+        condition: service_started
+      flagd:
+        condition: service_started
+    logging: *logging
+    
+  # Load Generator - Workers
+  load-generator-worker1:
+    image: ${IMAGE_NAME}:${DEMO_VERSION}-load-generator
+    container_name: load-generator-worker1
+    build:
+      context: ./
+      dockerfile: ${LOAD_GENERATOR_DOCKERFILE}
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    restart: unless-stopped
+    environment:
+      - LOCUST_MODE=worker
+      - LOCUST_MASTER=load-generator-master
+      - LOCUST_HOST
+      - LOCUST_BROWSER_TRAFFIC_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      - OTEL_RESOURCE_ATTRIBUTES
+      - OTEL_SERVICE_NAME=load-generator-worker1
+      - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+      - FLAGD_HOST
+      - FLAGD_OFREP_PORT
+    depends_on:
+      load-generator:
+        condition: service_started
+      frontend:
+        condition: service_started
+      flagd:
+        condition: service_started
+    logging: *logging
+    
+  load-generator-worker2:
+    image: ${IMAGE_NAME}:${DEMO_VERSION}-load-generator
+    container_name: load-generator-worker2
+    build:
+      context: ./
+      dockerfile: ${LOAD_GENERATOR_DOCKERFILE}
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    restart: unless-stopped
+    environment:
+      - LOCUST_MODE=worker
+      - LOCUST_MASTER=load-generator-master
+      - LOCUST_HOST
+      - LOCUST_BROWSER_TRAFFIC_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      - OTEL_RESOURCE_ATTRIBUTES
+      - OTEL_SERVICE_NAME=load-generator-worker2
+      - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+      - FLAGD_HOST
+      - FLAGD_OFREP_PORT
+    depends_on:
+      load-generator:
+        condition: service_started
+      frontend:
+        condition: service_started
+      flagd:
+        condition: service_started
+    logging: *logging
+    
+  load-generator-worker3:
+    image: ${IMAGE_NAME}:${DEMO_VERSION}-load-generator
+    container_name: load-generator-worker3
+    build:
+      context: ./
+      dockerfile: ${LOAD_GENERATOR_DOCKERFILE}
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    restart: unless-stopped
+    environment:
+      - LOCUST_MODE=worker
+      - LOCUST_MASTER=load-generator-master
+      - LOCUST_HOST
+      - LOCUST_BROWSER_TRAFFIC_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      - OTEL_RESOURCE_ATTRIBUTES
+      - OTEL_SERVICE_NAME=load-generator-worker3
+      - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+      - FLAGD_HOST
+      - FLAGD_OFREP_PORT
+    depends_on:
+      load-generator:
+        condition: service_started
       frontend:
         condition: service_started
       flagd:
